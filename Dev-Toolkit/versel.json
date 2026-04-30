@@ -1,14 +1,8 @@
 {
   "version": 2,
+  "public": true,
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "Access-Control-Allow-Origin", "value": "*" }
-      ]
-    }
+    { "source": "/api/(.*)", "destination": "/Dev-Toolkit/artifacts/api-server/$1" },
+    { "source": "/(.*)", "destination": "/Dev-Toolkit/artifacts/students-forum/dist/public/$1" }
   ]
 }
