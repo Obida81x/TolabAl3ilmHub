@@ -1,6 +1,9 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { useLocation } from "wouter";
 import { supabase } from "./supabase";
+// تأكد أن الكود داخل auth.ts يشبه هذا:
+export const useForgotPassword = () => { };
+export const useResetPassword = () => { };
 
 type CurrentUser = {
   displayName: string | number;

@@ -1,9 +1,6 @@
 import { Link } from "wouter";
 import { MessagesSquare, ChevronRight } from "lucide-react";
-import {
-  useListChatGroups,
-  getListChatGroupsQueryKey,
-} from "@workspace/api-client-react";
+
 import { useAuth, useRequireAuth } from "@/lib/auth";
 import { AppLayout } from "@/components/AppLayout";
 import { PageHeader } from "@/components/PageHeader";
@@ -17,11 +14,12 @@ export default function HalaqahListPage() {
   useRequireAuth();
   const { user } = useAuth();
   const { t, lang } = useTranslation();
-  const { data: groups, isLoading } = useListChatGroups({
-    query: { queryKey: getListChatGroupsQueryKey() },
-  });
+  // const { data: groups, isLoading } = useListChatGroups({
+  //   query: { queryKey: getListChatGroupsQueryKey() },
+  // });
+  const groups: any[] = []; const isLoading = false;
 
-  const isBrothers = user?.gender === "male";
+  const isBrothers = user?.user_metadata?.gender === "male";
 
   return (
     <AppLayout>

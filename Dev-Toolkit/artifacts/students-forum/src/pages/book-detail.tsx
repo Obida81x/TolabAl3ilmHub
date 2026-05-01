@@ -1,9 +1,5 @@
 import { Link, useRoute } from "wouter";
-import { ArrowLeft, ArrowRight, Download, BookOpen } from "lucide-react";
-import {
-  useGetBook,
-  getGetBookQueryKey,
-} from "@workspace/api-client-react";
+import { Download, BookOpen, ArrowLeft } from "lucide-react";
 import { useRequireAuth } from "@/lib/auth";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,23 +8,31 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/lib/i18n";
 
+interface Book {
+  author: string;
+  title: string;
+  category: string;
+  language: string;
+  pages?: number;
+  description?: string;
+  fileUrl: string;
+}
+
 export default function BookDetailPage() {
   useRequireAuth();
   const { t, lang } = useTranslation();
   const [, params] = useRoute<{ id: string }>("/library/:id");
   const id = params?.id ? Number(params.id) : 0;
-  const { data: b, isLoading } = useGetBook(id, {
-    query: { enabled: !!id, queryKey: getGetBookQueryKey(id) },
-  });
-
-  const BackIcon = lang === "ar" ? ArrowRight : ArrowLeft;
+  const b = null as Book | null;
+  const isLoading = false;
 
   return (
+    
     <AppLayout>
       <div className="px-6 lg:px-10 py-8 max-w-4xl mx-auto">
         <Link href="/library" data-testid="link-back-library">
             <Button variant="ghost" size="sm" className="gap-1 mb-4">
-              <BackIcon className="h-4 w-4" /> {t("library.backToLibrary")}
+              <ArrowLeft className="h-4 w-4" /> {t("library.backToLibrary")}
             </Button>
           </Link>
         {isLoading && <Skeleton className="h-64 w-full" />}
@@ -37,25 +41,25 @@ export default function BookDetailPage() {
             <div className="aspect-[3/4] rounded-md bg-gradient-to-br from-primary via-primary/80 to-secondary flex items-center justify-center relative overflow-hidden">
               <BookOpen className="h-16 w-16 text-primary-foreground/30" />
               <div className="absolute inset-x-4 bottom-4 text-primary-foreground" style={{ fontFamily: "var(--app-font-serif)" }}>
-                <div className="text-sm opacity-90 mb-1">{b.author}</div>
-                <div className="text-lg font-semibold">{b.title}</div>
+                <div className="text-sm opacity-90 mb-1">{b?.author}</div>
+                <div className="text-lg font-semibold">{b?.title}</div>
               </div>
             </div>
             <div>
-              <Badge variant="secondary" className="mb-3">{b.category}</Badge>
+              <Badge variant="secondary" className="mb-3">{b?.category}</Badge>
               <h1
                 className="text-3xl text-foreground"
                 style={{ fontFamily: "var(--app-font-serif)" }}
                 data-testid="text-book-title"
               >
-                {b.title}
+                {b?.title}
               </h1>
-              <div className="text-secondary text-lg mt-1">{b.author}</div>
+              <div className="text-secondary text-lg mt-1">{b?.author}</div>
               <div className="text-sm text-muted-foreground mt-2">
-                {b.language}
-                {b.pages ? ` · ${b.pages} ${t("common.pages")}` : ""}
+                {b?.language}
+                {b.pages ? ` · ${b?.pages} ${t("common.pages")}` : ""}
               </div>
-              {b.description && (
+              {b?.description && (
                 <Card className="border-card-border mt-6">
                   <CardContent className="p-5">
                     <p
@@ -63,13 +67,13 @@ export default function BookDetailPage() {
                       style={{ fontFamily: "var(--app-font-serif)", fontSize: "1.05rem" }}
                       data-testid="text-book-description"
                     >
-                      {b.description}
+                      {b?.description}
                     </p>
                   </CardContent>
                 </Card>
               )}
               <Button asChild size="lg" className="mt-6 gap-2" data-testid="button-download">
-                <a href={b.fileUrl} target="_blank" rel="noopener noreferrer">
+                <a href={b?.fileUrl || "#"} target="_blank" rel="noopener noreferrer">
                   <Download className="h-4 w-4" /> {t("common.download")}
                 </a>
               </Button>

@@ -11,15 +11,11 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  useListStories,
-  useCreateStory,
-  getListStoriesQueryKey,
-} from "@workspace/api-client-react";
+
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
-import type { UploadResult } from "@/lib/upload";
+import { useListStories, useCreateStory, getListStoriesQueryKey } from "../lib/stories";import type { UploadResult } from "@/lib/upload";
 
 type StoryUser = {
   id: number;
@@ -38,6 +34,8 @@ export function StoryTray() {
   const { user } = useAuth();
   const { t } = useTranslation();
   const queryClient = useQueryClient();
+
+  // إصلاح: تفعيل جلب البيانات وإرسالها
   const { data: groups, isLoading } = useListStories({
     query: { queryKey: getListStoriesQueryKey() },
   });
@@ -68,7 +66,7 @@ export function StoryTray() {
           setMedia(null);
           setOpen(false);
         },
-      },
+      }
     );
   };
 
@@ -88,14 +86,15 @@ export function StoryTray() {
             <span className="text-xs text-muted-foreground">{t("stories.your")}</span>
           </button>
         )}
+
         {isLoading && (
           <div className="text-xs text-muted-foreground py-4">{t("stories.loading")}</div>
         )}
-        {groups?.map((g) => (
+        {(groups as any[])?.map((g: any) => (
           <button
             type="button"
             key={g.user.id}
-            onClick={() => setViewing(g as { user: StoryUser; stories: StoryItem[] })}
+            onClick={() => setViewing(g)}
             data-testid={`button-story-${g.user.id}`}
             className="flex flex-col items-center gap-2 min-w-[64px] group"
           >
@@ -111,39 +110,33 @@ export function StoryTray() {
         ))}
       </div>
 
+      {/* نافذة إضافة ستوري */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("stories.share")}</DialogTitle>
           </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            {t("stories.dialogHelp")}
-          </p>
-          <Textarea
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder={t("stories.placeholder")}
-            rows={4}
-            maxLength={500}
-            data-testid="input-story-content"
-          />
-          <MediaUploadButton
-            value={media}
-            onChange={setMedia}
-            testIdPrefix="story-media"
-          />
+          <div className="space-y-4 py-4">
+            <Textarea
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              placeholder={t("stories.placeholder")}
+              rows={4}
+              maxLength={500}
+            />
+            <MediaUploadButton
+              value={media}
+              onChange={setMedia}
+              testIdPrefix="story-media"
+            />
+          </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setOpen(false)}
-              data-testid="button-story-cancel"
-            >
+            <Button variant="outline" onClick={() => setOpen(false)}>
               {t("common.cancel")}
             </Button>
-            <Button
-              onClick={handleSubmit}
+            <Button 
+              onClick={handleSubmit} 
               disabled={!content.trim() || create.isPending}
-              data-testid="button-story-submit"
             >
               {create.isPending ? t("common.posting") : t("stories.postStory")}
             </Button>
@@ -151,16 +144,16 @@ export function StoryTray() {
         </DialogContent>
       </Dialog>
 
+      {/* نافذة عرض الستوري */}
       <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
-        <DialogContent className="bg-gradient-to-br from-primary/95 to-secondary/95 text-primary-foreground border-none">
+        <DialogContent className="bg-gradient-to-br from-primary/95 to-secondary/95 text-primary-foreground border-none max-w-lg">
           <button
-            type="button"
+            className="absolute top-4 right-4 z-10 text-primary-foreground"
             onClick={() => setViewing(null)}
-            className="absolute top-3 right-3 text-primary-foreground"
-            data-testid="button-close-story"
           >
-            <X className="h-5 w-5" />
+            <X className="h-6 w-6" />
           </button>
+          
           {viewing && (
             <div className="py-6 space-y-6">
               <div className="flex items-center gap-3">
@@ -168,43 +161,22 @@ export function StoryTray() {
                 <div>
                   <div className="font-medium">{viewing.user.displayName}</div>
                   <div className="text-xs opacity-80">
-                    {viewing.stories.length}{" "}
-                    {viewing.stories.length === 1
-                      ? t("stories.singular")
-                      : t("stories.plural")}
+                    {viewing.stories.length} {viewing.stories.length === 1 ? t("stories.singular") : t("stories.plural")}
                   </div>
                 </div>
               </div>
-              <div className="space-y-4">
+
+              <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
                 {viewing.stories.map((s) => (
-                  <div
-                    key={s.id}
-                    data-testid={`story-card-${s.id}`}
-                    className="rounded-md bg-primary-foreground/10 p-4 space-y-3"
-                  >
-                    <div
-                      className="text-base"
-                      style={{ fontFamily: "var(--app-font-serif)" }}
-                      data-testid={`text-story-content-${s.id}`}
-                    >
+                  <div key={s.id} className="rounded-md bg-primary-foreground/10 p-4 space-y-3">
+                    <p className="text-base" style={{ fontFamily: "var(--app-font-serif)" }}>
                       {s.content}
-                    </div>
+                    </p>
                     {s.imageUrl && (
-                      <img
-                        src={s.imageUrl}
-                        alt=""
-                        className="rounded-md max-h-80 w-full object-contain bg-black/20"
-                        data-testid={`img-story-${s.id}`}
-                      />
+                      <img src={s.imageUrl} className="rounded-md max-h-80 w-full object-contain bg-black/20" alt="" />
                     )}
                     {s.videoUrl && (
-                      <video
-                        src={s.videoUrl}
-                        controls
-                        playsInline
-                        className="rounded-md max-h-80 w-full bg-black"
-                        data-testid={`video-story-${s.id}`}
-                      />
+                      <video src={s.videoUrl} controls className="rounded-md max-h-80 w-full bg-black" />
                     )}
                   </div>
                 ))}
