@@ -199,7 +199,7 @@ function AdminMembers({
     <Card className="border-card-border">
       <CardContent className="p-0 divide-y divide-border">
         {users.map((u) => {
-          const isSelf = u.id === me.id;
+          const isSelf = u.id === Number(me.id);
           const canChangeAdmin = me.isMainAdmin && !u.isMainAdmin && !isSelf;
           const canChangeActive =
             !u.isMainAdmin && !isSelf && (me.isMainAdmin || !u.isAdmin);
@@ -984,7 +984,7 @@ export default function AdminPage() {
 
   if (!me) return null;
 
-  const isAdminAlready = me.isAdmin === true;
+  const isAdminAlready = me?.isMainAdmin === true;
 
   return (
     <AppLayout>

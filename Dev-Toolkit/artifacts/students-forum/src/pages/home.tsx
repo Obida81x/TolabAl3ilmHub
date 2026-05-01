@@ -13,6 +13,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { PostCard } from "@/components/PostCard";
 import { formatDateTime } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
+import { useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+
+// داخل دالة الـ HomePage
+useEffect(() => {
+  const checkSupabase = async () => {
+    const { data, error } = await supabase.from('profiles').select('*').limit(1);
+    if (error) console.log("خطأ في الاتصال:", error.message);
+    else console.log("سوبابيس شغال تمام!", data);
+  };
+  checkSupabase();
+}, []);
 
 export default function HomePage() {
   useRequireAuth();

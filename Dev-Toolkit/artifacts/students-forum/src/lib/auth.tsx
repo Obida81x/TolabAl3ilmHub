@@ -3,6 +3,8 @@ import { useLocation } from "wouter";
 import { supabase } from "./supabase";
 
 type CurrentUser = {
+  displayName: string | number;
+  isMainAdmin: any;
   id: string;
   email?: string;
   user_metadata?: {
@@ -38,7 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const {
           data: { user: supabaseUser },
         } = await supabase.auth.getUser();
-        setUser(supabaseUser as CurrentUser);
+        setUser(supabaseUser as unknown as CurrentUser);
       } catch (err) {
         console.error("Failed to get current user:", err);
         setUser(null);
@@ -53,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user as CurrentUser | null);
+      setUser(session?.user ? (session.user as unknown as CurrentUser) : null);
     });
 
     return () => subscription?.unsubscribe();
@@ -64,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const {
         data: { user: supabaseUser },
       } = await supabase.auth.getUser();
-      setUser(supabaseUser as CurrentUser);
+      setUser(supabaseUser as unknown as CurrentUser);
     } catch (err) {
       console.error("Failed to refresh user:", err);
     }

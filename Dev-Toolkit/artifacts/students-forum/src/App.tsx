@@ -22,6 +22,22 @@ import TestDetailPage from "@/pages/test-detail";
 import MembersPage from "@/pages/members";
 import ProfilePage from "@/pages/profile";
 import AdminPage from "@/pages/admin";
+import { supabase } from '@/lib/supabase';
+import { useEffect } from "react";
+
+useEffect(() => {
+  // التأكد من الجلسة الحالية عند تشغيل التطبيق
+  supabase.auth.getSession().then(({ data: { session } }) => {
+    // يمكنك تحديث الـ State هنا إذا كنت تستخدم Context
+  });
+
+  // مراقبة أي تغيير (تسجيل دخول أو خروج)
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    console.log("تغيرت حالة المستخدم:", session?.user?.email);
+  });
+
+  return () => subscription.unsubscribe();
+}, []);
 
 const queryClient = new QueryClient({
   defaultOptions: {

@@ -13,6 +13,20 @@ import { supabase } from "@/lib/supabase";
 import { getGetCurrentUserQueryKey } from "@workspace/api-client-react";
 import { Loader2 } from "lucide-react";
 
+// داخل دالة التسجيل
+const handleLogin = async (email: string, password: string) => {
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: password,
+  });
+
+  if (error) {
+    console.error("خطأ في الدخول:", error.message);
+  } else {
+    console.log("أهلاً بك مجدداً!", data.user);
+  }
+};
+
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
