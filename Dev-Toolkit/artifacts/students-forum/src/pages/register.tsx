@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import bcrypt from "bcryptjs";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -13,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
+
 import { Logo } from "@/components/Logo";
 import { ArabesqueDivider, GeometricPattern } from "@/components/Pattern";
 import { LanguageToggle } from "@/components/LanguageToggle";
@@ -23,7 +26,6 @@ export default function RegisterPage() {
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
-  // الحالة الخاصة بالنموذج كما في تصميمك
   const [form, setForm] = useState({
     username: "",
     displayName: "",
@@ -35,173 +37,184 @@ export default function RegisterPage() {
   });
 
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // ملاحظة: قمت بتعطيل hook التسجيل في صورتك، سنقوم بمحاكاة الحالة
-  const register = { 
-    mutate: (data: any, options: any) => {
-        console.log("Registering user:", data);
-        // هنا يتم استدعاء الـ API لاحقاً
-    },
-    isPending: false 
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    setIsLoading(true);
 
-    if (form.gender !== "male" && form.gender !== "female") {
-      setError(t("register.selectGender"));
-      return;
+    try {
+      const cleanUsername = form.username.replace(/\s/g, "_");
+
+      // 🟡 1. تحقق إذا المستخدم موجود (بدون .single لتجنب error)
+      const { data: existingUsers, error: checkError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("username", cleanUsername);
+
+      if (checkError) {
+        setError(checkError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      if (existingUsers && existingUsers.length > 0) {
+        setError("Username already exists");
+        setIsLoading(false);
+        return;
+      }
+
+      // 🟢 2. تشفير كلمة المرور
+      const hashedPassword = await bcrypt.hash(form.password, 10);
+
+      // 🟢 3. إدخال المستخدم
+      const { data, error: insertError } = await supabase
+        .from("users")
+        .insert([
+          {
+            username: cleanUsername,
+            display_name: form.displayName,
+            email: form.email,
+            password: hashedPassword,
+            gender: form.gender,
+            country: form.country,
+            bio: form.bio,
+          },
+        ])
+        .select()
+        .single();
+
+      if (insertError || !data) {
+        setError(insertError?.message || "Registration failed");
+        setIsLoading(false);
+        return;
+      }
+
+      console.log("User registered:", data);
+
+      queryClient.setQueryData(["user"], data);
+
+      navigate("/login");
+
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setIsLoading(false);
     }
-
-    register.mutate(form, {
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-        navigate("/home");
-      },
-      onError: (err: Error) => {
-        setError(err.message || t("register.failed"));
-      },
-    });
   };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 py-10 relative overflow-hidden">
       <GeometricPattern opacity={0.05} />
-      
+
       <div className="absolute top-4 right-4 z-10">
         <LanguageToggle variant="outline" />
       </div>
 
       <div className="relative w-full max-w-lg">
+
         <div className="text-center mb-6">
           <button onClick={() => navigate("/")}>
-            {/* غلفنا الشعار بـ div ليقبل التنسيق بدلاً منه */}
-            <div className="inline-block">
-              <Logo />
-            </div>
+            <Logo />
           </button>
         </div>
 
-        <Card className="border-card-border">
+        <Card>
           <CardContent className="p-8">
+
             <div className="text-center mb-6">
-              <div className="text-secondary text-lg mb-1" style={{ fontFamily: "var(--app-font-serif)" }}>
-                {t("ar.joinMajlis")}
-              </div>
-              <h1 className="text-2xl font-bold" style={{ fontFamily: "var(--app-font-serif)" }}>
+              <ArabesqueDivider />
+              <h1 className="text-2xl font-bold mt-4">
                 {t("register.title")}
               </h1>
-              <ArabesqueDivider className="mt-4" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4">
-                {/* اسم المستخدم */}
-                <div className="space-y-2">
-                  <Label htmlFor="username">{t("register.username")}</Label>
-                  <Input
-                    id="username"
-                    value={form.username}
-                    onChange={(e) => setForm({ ...form, username: e.target.value })}
-                    placeholder="abu_abdallah"
-                    required
-                  />
-                </div>
 
-                {/* الاسم التعريفي */}
-                <div className="space-y-2">
-                  <Label htmlFor="displayName">{t("register.displayName")}</Label>
-                  <Input
-                    id="displayName"
-                    value={form.displayName}
-                    onChange={(e) => setForm({ ...form, displayName: e.target.value })}
-                    placeholder="Abdallah"
-                    required
-                  />
-                </div>
+              <Input
+                placeholder="username"
+                value={form.username}
+                onChange={(e) =>
+                  setForm({ ...form, username: e.target.value })
+                }
+                required
+              />
 
-                {/* البريد الإلكتروني */}
-                <div className="space-y-2">
-                  <Label htmlFor="email">{t("register.email")}</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    required
-                  />
-                </div>
+              <Input
+                placeholder="display name"
+                value={form.displayName}
+                onChange={(e) =>
+                  setForm({ ...form, displayName: e.target.value })
+                }
+                required
+              />
 
-                {/* كلمة المرور */}
-                <div className="space-y-2">
-                  <Label htmlFor="password">{t("register.password")}</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={form.password}
-                    onChange={(e) => setForm({ ...form, password: e.target.value })}
-                    required
-                  />
-                </div>
+              <Input
+                type="email"
+                placeholder="email"
+                value={form.email}
+                onChange={(e) =>
+                  setForm({ ...form, email: e.target.value })
+                }
+                required
+              />
 
-                {/* اختيار الجنس */}
-                <div className="space-y-2">
-                  <Label>{t("register.gender")}</Label>
-                  <Select
-                    value={form.gender}
-                    onValueChange={(v) => setForm({ ...form, gender: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={t("register.select")} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">{t("common.brother")}</SelectItem>
-                      <SelectItem value="female">{t("common.sister")}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <Input
+                type="password"
+                placeholder="password"
+                value={form.password}
+                onChange={(e) =>
+                  setForm({ ...form, password: e.target.value })
+                }
+                required
+              />
 
-                {/* الدولة والنبذة */}
-                <div className="space-y-2">
-                  <Label htmlFor="country">{t("register.country")}</Label>
-                  <Input
-                    id="country"
-                    value={form.country}
-                    onChange={(e) => setForm({ ...form, country: e.target.value })}
-                  />
-                </div>
+              <Select
+                value={form.gender}
+                onValueChange={(v) =>
+                  setForm({ ...form, gender: v })
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select gender" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="male">Male</SelectItem>
+                  <SelectItem value="female">Female</SelectItem>
+                </SelectContent>
+              </Select>
 
-                <div className="space-y-2">
-                  <Label htmlFor="bio">{t("register.bio")}</Label>
-                  <Textarea
-                    id="bio"
-                    value={form.bio}
-                    onChange={(e) => setForm({ ...form, bio: e.target.value })}
-                    maxLength={200}
-                  />
-                </div>
-              </div>
+              <Input
+                placeholder="country"
+                value={form.country}
+                onChange={(e) =>
+                  setForm({ ...form, country: e.target.value })
+                }
+              />
+
+              <Textarea
+                placeholder="bio"
+                value={form.bio}
+                onChange={(e) =>
+                  setForm({ ...form, bio: e.target.value })
+                }
+                maxLength={200}
+              />
 
               {error && (
-                <div className="text-sm text-destructive font-medium mt-2">
-                  {error}
-                </div>
+                <p className="text-red-500 text-sm">{error}</p>
               )}
 
-              <Button type="submit" className="w-full mt-4" disabled={register.isPending}>
-                {register.isPending ? t("common.creatingAccount") : t("common.createAccount")}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? "Creating..." : "Create Account"}
               </Button>
+
             </form>
 
-            <p className="mt-6 text-sm text-center text-muted-foreground">
-              {t("register.alreadyMember")}{" "}
-              <button onClick={() => navigate("/login")} className="text-primary hover:underline font-bold">
-                {t("common.signIn")}
-              </button>
-            </p>
           </CardContent>
         </Card>
+
       </div>
     </div>
   );
