@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +19,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { useTranslation } from "@/lib/i18n";
 
 export default function RegisterPage() {
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useTranslation();
 
@@ -57,7 +57,7 @@ export default function RegisterPage() {
     register.mutate(form, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ["/api/user"] });
-        setLocation("/home");
+        navigate("/home");
       },
       onError: (err: Error) => {
         setError(err.message || t("register.failed"));
@@ -75,12 +75,12 @@ export default function RegisterPage() {
 
       <div className="relative w-full max-w-lg">
         <div className="text-center mb-6">
-          <Link href="/">
-        {/* غلفنا الشعار بـ div ليقبل التنسيق بدلاً منه */}
-        <div className="inline-block">
-          <Logo />
-        </div>
-      </Link>
+          <button onClick={() => navigate("/")}>
+            {/* غلفنا الشعار بـ div ليقبل التنسيق بدلاً منه */}
+            <div className="inline-block">
+              <Logo />
+            </div>
+          </button>
         </div>
 
         <Card className="border-card-border">
@@ -196,9 +196,9 @@ export default function RegisterPage() {
 
             <p className="mt-6 text-sm text-center text-muted-foreground">
               {t("register.alreadyMember")}{" "}
-              <Link href="/login" className="text-primary hover:underline font-bold">
+              <button onClick={() => navigate("/login")} className="text-primary hover:underline font-bold">
                 {t("common.signIn")}
-              </Link>
+              </button>
             </p>
           </CardContent>
         </Card>

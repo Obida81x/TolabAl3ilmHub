@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { Video, Radio, Calendar, Plus } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRequireAuth, useAuth } from "@/lib/auth";
@@ -37,6 +37,7 @@ type Meeting = {
 
 function MeetingList({ items, isLoading }: { items: Meeting[]; isLoading: boolean }) {
   const { t, lang } = useTranslation();
+  const navigate = useNavigate();
 
   if (isLoading) return <Skeleton className="h-32 w-full" />;
 
@@ -53,7 +54,7 @@ function MeetingList({ items, isLoading }: { items: Meeting[]; isLoading: boolea
   return (
     <div className="grid md:grid-cols-2 gap-4">
       {items.map((m) => (
-        <Link key={m.id} href={`/sessions/${m.id}`}>
+        <button key={m.id} onClick={() => navigate(`/sessions/${m.id}`)}>
           <Card className="border-card-border hover:border-primary transition-colors cursor-pointer h-full">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-3">
@@ -77,7 +78,7 @@ function MeetingList({ items, isLoading }: { items: Meeting[]; isLoading: boolea
               )}
             </CardContent>
           </Card>
-        </Link>
+        </button>
       ))}
     </div>
   );

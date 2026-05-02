@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { ArrowRight, BookOpen, Users, Video, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,12 @@ import { useTranslation } from "@/lib/i18n";
 
 export default function LandingPage() {
   const { user, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   const { t, lang } = useTranslation();
 
   useEffect(() => {
-    if (!isLoading && user) setLocation("/home");
-  }, [user, isLoading, setLocation]);
+    if (!isLoading && user) navigate("/home");
+  }, [user, isLoading, navigate]);
 
   const features = [
     {
@@ -52,10 +52,14 @@ export default function LandingPage() {
         <div className="flex items-center gap-2">
           <LanguageToggle />
           <Button asChild variant="ghost" data-testid="button-landing-login">
-            <Link href="/login">{t("common.signIn")}</Link>
+            <button onClick={() => navigate("/login")}>
+              {t("common.signIn")}
+            </button>
           </Button>
           <Button asChild data-testid="button-landing-register">
-            <Link href="/register">{t("common.createAccount")}</Link>
+            <button onClick={() => navigate("/register")}>
+              {t("common.createAccount")}
+            </button>
           </Button>
         </div>
       </header>
@@ -89,13 +93,15 @@ export default function LandingPage() {
           <ArabesqueDivider className="my-10 max-w-md mx-auto" />
           <div className="flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="gap-2" data-testid="button-hero-join">
-              <Link href="/register">
+              <button onClick={() => navigate("/register")}>
                 {t("landing.enterMajlis")}{" "}
                 <ArrowRight className={lang === "ar" ? "h-4 w-4 rotate-180" : "h-4 w-4"} />
-              </Link>
+              </button>
             </Button>
             <Button asChild size="lg" variant="outline" data-testid="button-hero-login">
-              <Link href="/login">{t("landing.iHaveAccount")}</Link>
+              <button onClick={() => navigate("/login")}>
+                {t("landing.iHaveAccount")}
+              </button>
             </Button>
           </div>
         </div>
@@ -158,7 +164,9 @@ export default function LandingPage() {
           </div>
           <ArabesqueDivider className="mt-10 max-w-sm mx-auto" />
           <Button asChild size="lg" className="mt-10" data-testid="button-cta-bottom">
-            <Link href="/register">{t("landing.beginJourney")}</Link>
+            <button onClick={() => navigate("/register")}>
+              {t("landing.beginJourney")}
+            </button>
           </Button>
         </div>
       </section>

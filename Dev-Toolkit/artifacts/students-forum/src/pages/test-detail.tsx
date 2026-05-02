@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useParams } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, CheckCircle2, XCircle, Award } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRequireAuth } from "@/lib/auth";
@@ -15,8 +15,7 @@ import { useTranslation } from "@/lib/i18n";
 export default function TestDetailPage() {
   useRequireAuth();
   const { t, lang } = useTranslation();
-  const params = useParams<{ id: string }>();
-  const id = params.id ? parseInt(params.id) : 0;
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
   // تعريف بيانات افتراضية لتجنب أخطاء TypeScript حتى يتم تفعيل جلب البيانات
@@ -45,21 +44,19 @@ export default function TestDetailPage() {
   return (
     <AppLayout>
       <div className="px-6 lg:px-10 py-8 max-w-3xl mx-auto">
-        <Link href="/tests">
-          <Button variant="ghost" size="sm" className="gap-1 mb-6">
-            <BackIcon className="h-4 w-4" />
-            {t("tests.allTests")}
-          </Button>
-        </Link>
+        <Button variant="ghost" size="sm" className="gap-1 mb-6" onClick={() => navigate("/tests")}>
+          <BackIcon className="h-4 w-4" />
+          {t("tests.allTests")}
+        </Button>
 
         {isLoading ? (
           <Skeleton className="h-96 w-full" />
         ) : !test && !result ? (
           <div className="text-center py-20">
             <h2 className="text-2xl font-bold mb-4">{t("tests.testNotFound")}</h2>
-            <Link href="/tests">
-              <Button>{t("tests.backToTests")}</Button>
-            </Link>
+            <Button onClick={() => navigate("/tests")}>
+              {t("tests.backToTests")}
+            </Button>
           </div>
         ) : result ? (
           <div className="space-y-6">
@@ -106,9 +103,9 @@ export default function TestDetailPage() {
               <Button variant="outline" className="flex-1" onClick={() => setResult(null)}>
                 {t("tests.retake")}
               </Button>
-              <Link href="/tests" className="flex-1">
-                <Button className="w-full">{t("tests.backToTests")}</Button>
-              </Link>
+              <Button className="flex-1" onClick={() => navigate("/tests")}>
+                {t("tests.backToTests")}
+              </Button>
             </div>
           </div>
         ) : (

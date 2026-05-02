@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Link, useLocation } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/lib/i18n";
 import { supabase } from "@/lib/supabase";
 import { useQueryClient } from "@tanstack/react-query";
@@ -12,9 +12,9 @@ import { Logo } from "@/components/Logo";
 
 export default function LoginPage() {
   const { t } = useTranslation();
-  const [, setLocation] = useLocation();
-  const queryClient = useQueryClient(); // تم إضافة الأقواس لحل مشكلة المحرك
-  const [email, setEmail] = useState("");
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [identifier, setIdentifier] = useState(""); // تم تغيير الاسم ليعبر عن (إيميل أو يوزر نيم)
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,8 +25,27 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      let loginEmail = identifier;
+
+      // 1. فحص إذا كان المدخل اسم مستخدم (لا يحتوي على @)
+      if (!identifier.includes("@")) {
+        const { data, error: profileError } = await supabase
+          .from("profiles") // تأكد أن اسم الجدول هو profiles
+          .select("email")
+          .eq("username", identifier)
+          .single();
+
+        if (profileError || !data) {
+          setError(t("login.userNotFound") || "اسم المستخدم غير موجود");
+          setIsLoading(false);
+          return;
+        }
+        loginEmail = data.email;
+      }
+
+      // 2. محاولة تسجيل الدخول باستخدام البريد الإلكتروني الناتج
       const { error: signInError } = await supabase.auth.signInWithPassword({
-        email,
+        email: loginEmail,
         password,
       });
 
@@ -37,7 +56,7 @@ export default function LoginPage() {
 
       // تحديث البيانات بعد تسجيل الدخول بنجاح
       await queryClient.invalidateQueries({ queryKey: ["user"] });
-      setLocation("/");
+      navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("login.failed"));
     } finally {
@@ -49,11 +68,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center px-4 relative overflow-hidden">
       <div className="relative w-full max-w-md">
         <div className="text-center mb-6">
-          <Link href="/">
+          <button onClick={() => navigate("/")}>
             <span className="inline-block"> 
               <Logo /> 
             </span>
-          </Link>
+          </button>
         </div>
         
         <Card className="border-card-border">
@@ -66,12 +85,12 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email">{t("login.username")}</Label>
+                <Label htmlFor="identifier">{t("login.username")}</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="identifier"
+                  type="text" // تم تغيير النوع إلى text لدعم اليوزر نيم
+                  value={identifier}
+                  onChange={(e) => setIdentifier(e.target.value)}
                   placeholder={t("login.usernamePlaceholder")}
                   required
                   data-testid="input-login-username"
@@ -114,15 +133,15 @@ export default function LoginPage() {
 
             <div className="mt-6 text-center text-sm space-y-3">
               <p>
-                <Link href="/forgot-password" title={t("login.forgotPassword")} className="text-primary hover:underline">
+                <button onClick={() => navigate("/forgot-password")} title={t("login.forgotPassword")} className="text-primary hover:underline">
                   {t("login.forgotPassword")}
-                </Link>
+                </button>
               </p>
               <p className="text-muted-foreground">
                 {t("login.newHere")}{" "}
-                <Link href="/register" className="text-primary hover:underline" data-testid="link-to-register">
+                <button onClick={() => navigate("/register")} className="text-primary hover:underline" data-testid="link-to-register">
                   {t("login.createAccountLink")}
-                </Link>
+                </button>
               </p>
             </div>
           </CardContent>

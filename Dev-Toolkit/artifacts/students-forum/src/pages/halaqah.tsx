@@ -1,4 +1,4 @@
-import { Link } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { MessagesSquare, ChevronRight } from "lucide-react";
 
 import { useAuth, useRequireAuth } from "@/lib/auth";
@@ -12,6 +12,7 @@ import { useTranslation } from "@/lib/i18n";
 
 export default function HalaqahListPage() {
   useRequireAuth();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { t, lang } = useTranslation();
   // const { data: groups, isLoading } = useListChatGroups({
@@ -53,12 +54,17 @@ export default function HalaqahListPage() {
           </>
         )}
         {groups?.map((g) => (
-          <Link key={g.id} href={`/halaqah/${g.id}`} data-testid={`link-halaqah-${g.id}`} className="block group">
-              <Card className="border-card-border hover:border-primary transition-colors">
-                <CardContent className="p-5 flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-md bg-primary/10 text-primary flex items-center justify-center">
-                    <MessagesSquare className="h-5 w-5" />
-                  </div>
+          <button
+            key={g.id}
+            onClick={() => navigate(`/halaqah/${g.id}`)}
+            data-testid={`link-halaqah-${g.id}`}
+            className="block group"
+          >
+            <Card className="border-card-border hover:border-primary transition-colors">
+              <CardContent className="p-5 flex items-center gap-4">
+                <div className="h-12 w-12 rounded-md bg-primary/10 text-primary flex items-center justify-center">
+                  <MessagesSquare className="h-5 w-5" />
+                </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3
@@ -94,7 +100,7 @@ export default function HalaqahListPage() {
                   />
                 </CardContent>
               </Card>
-            </Link>
+            </button>
         ))}
         {!isLoading && groups?.length === 0 && (
           <Card className="border-card-border">

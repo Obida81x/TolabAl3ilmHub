@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { useRequireAuth } from "@/lib/auth";
 import { AppLayout } from "@/components/AppLayout";
 import { PageHeader } from "@/components/PageHeader";
@@ -14,6 +14,7 @@ export default function LibraryPage() {
   useRequireAuth();
   const { t } = useTranslation();
   const [filter, setFilter] = useState<string>("all");
+  const navigate = useNavigate();
 
   // تعريف البيانات بشكل مؤقت لمنع أخطاء TypeScript
   const books: any[] = []; 
@@ -92,7 +93,9 @@ export default function LibraryPage() {
                 )}
                 <div className="flex gap-2">
                   <Button asChild size="sm" variant="outline" className="flex-1">
-                    <Link href={`/library/${b.id}`}>{t("common.details")}</Link>
+                    <button onClick={() => navigate(`/library/${b.id}`)}>
+                      {t("common.details")}
+                    </button>
                   </Button>
                   {b.fileUrl && (
                     <Button asChild size="sm" className="gap-1">

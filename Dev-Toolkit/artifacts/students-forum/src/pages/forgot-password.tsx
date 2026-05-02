@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { useForgotPassword, useResetPassword } from "../lib/auth";
 
 export default function ForgotPasswordPage() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   
   // إصلاح: تعريف الـ Hooks بشكل صحيح
   const forgot = useForgotPassword();
@@ -72,11 +73,11 @@ export default function ForgotPasswordPage() {
 
       <div className="relative w-full max-w-md">
         <div className="text-center mb-6">
-          <Link href="/">
+          <button onClick={() => navigate("/")}>
             <div className="inline-block cursor-pointer">
               <Logo />
             </div>
-          </Link>
+          </button>
         </div>
 
         <Card className="border-card-border">
@@ -152,19 +153,19 @@ export default function ForgotPasswordPage() {
             {step === "done" && (
               <div className="text-center space-y-4">
                 <p className="text-foreground">{t("forgot.success")}</p>
-                <Link href="/login">
+                <button onClick={() => navigate("/login")}>
                   <Button className="w-full">{t("common.signIn")}</Button>
-                </Link>
+                </button>
               </div>
             )}
 
             {step !== "done" && (
               <p className="mt-6 text-sm text-center">
-                <Link href="/login">
+                <button onClick={() => navigate("/login")}>
                   <span className="text-primary hover:underline cursor-pointer">
                     {t("forgot.backToLogin")}
                   </span>
-                </Link>
+                </button>
               </p>
             )}
           </CardContent>

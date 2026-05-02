@@ -1,4 +1,4 @@
-import { Link, useRoute } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { Download, BookOpen, ArrowLeft } from "lucide-react";
 import { useRequireAuth } from "@/lib/auth";
 import { AppLayout } from "@/components/AppLayout";
@@ -21,8 +21,8 @@ interface Book {
 export default function BookDetailPage() {
   useRequireAuth();
   const { t, lang } = useTranslation();
-  const [, params] = useRoute<{ id: string }>("/library/:id");
-  const id = params?.id ? Number(params.id) : 0;
+  const navigate = useNavigate();
+  const id = 0;
   const b = null as Book | null;
   const isLoading = false;
 
@@ -30,11 +30,9 @@ export default function BookDetailPage() {
     
     <AppLayout>
       <div className="px-6 lg:px-10 py-8 max-w-4xl mx-auto">
-        <Link href="/library" data-testid="link-back-library">
-            <Button variant="ghost" size="sm" className="gap-1 mb-4">
-              <ArrowLeft className="h-4 w-4" /> {t("library.backToLibrary")}
-            </Button>
-          </Link>
+        <Button variant="ghost" size="sm" className="gap-1 mb-4" onClick={() => window.history.back()}>
+          <ArrowLeft className="h-4 w-4" /> {t("library.backToLibrary")}
+        </Button>
         {isLoading && <Skeleton className="h-64 w-full" />}
         {b && (
           <div className="grid md:grid-cols-[260px_1fr] gap-8">

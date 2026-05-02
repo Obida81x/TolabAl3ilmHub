@@ -1,6 +1,6 @@
 import React from "react";
-import { Link, useParams } from "wouter";
-import { ArrowLeft, ArrowRight, Radio, Video, Calendar, Clock, ExternalLink } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ArrowLeft, ArrowRight, Radio, Video, Calendar, Clock, ExternalLink, Link } from "lucide-react";
 import { useRequireAuth } from "@/lib/auth";
 import { AppLayout } from "@/components/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +21,8 @@ function videoEmbed(url: string): string {
 export default function SessionDetailPage() {
   useRequireAuth();
   const { t, lang } = useTranslation();
-  const params = useParams<{ id: string }>();
+
+  const navigate = useNavigate();
   
   // في الصور كان المتغير مسمى m، سنقوم بتعريفه هنا
   // ملاحظة: قمت بتعطيل جلب البيانات في السطر 23 في صورتك، لذا سنضع بيانات افتراضية للتجربة

@@ -1,9 +1,10 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Routes, Route, BrowserRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/lib/auth";
 import { I18nProvider } from "@/lib/i18n";
+
 import NotFound from "@/pages/not-found";
 import LandingPage from "@/pages/landing";
 import LoginPage from "@/pages/login";
@@ -22,22 +23,9 @@ import TestDetailPage from "@/pages/test-detail";
 import MembersPage from "@/pages/members";
 import ProfilePage from "@/pages/profile";
 import AdminPage from "@/pages/admin";
-import { supabase } from '@/lib/supabase';
+
+import { supabase } from "@/lib/supabase";
 import { useEffect } from "react";
-
-useEffect(() => {
-  // التأكد من الجلسة الحالية عند تشغيل التطبيق
-  supabase.auth.getSession().then(({ data: { session } }) => {
-    // يمكنك تحديث الـ State هنا إذا كنت تستخدم Context
-  });
-
-  // مراقبة أي تغيير (تسجيل دخول أو خروج)
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-    console.log("تغيرت حالة المستخدم:", session?.user?.email);
-  });
-
-  return () => subscription.unsubscribe();
-}, []);
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,46 +36,55 @@ const queryClient = new QueryClient({
   },
 });
 
-function Routes() {
+function AppRoutes() {
   return (
-    <Switch>
-      <Route path="/" component={LandingPage} />
-      <Route path="/login" component={LoginPage} />
-      <Route path="/register" component={RegisterPage} />
-      <Route path="/forgot-password" component={ForgotPasswordPage} />
-      <Route path="/home" component={HomePage} />
-      <Route path="/feed" component={FeedPage} />
-      <Route path="/halaqah" component={HalaqahListPage} />
-      <Route path="/halaqah/:id" component={HalaqahRoomPage} />
-      <Route path="/sessions" component={SessionsPage} />
-      <Route path="/sessions/:id" component={SessionDetailPage} />
-      <Route path="/library" component={LibraryPage} />
-      <Route path="/library/:id" component={BookDetailPage} />
-      <Route path="/tests" component={TestsPage} />
-      <Route path="/tests/:id" component={TestDetailPage} />
-      <Route path="/members" component={MembersPage} />
-      <Route path="/profile/:id" component={ProfilePage} />
-      <Route path="/admin" component={AdminPage} />
-      <Route component={NotFound} />
-    </Switch>
+    <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/home" element={<HomePage />} />
+      <Route path="/feed" element={<FeedPage />} />
+      <Route path="/halaqah" element={<HalaqahListPage />} />
+      <Route path="/halaqah/:id" element={<HalaqahRoomPage />} />
+      <Route path="/sessions" element={<SessionsPage />} />
+      <Route path="/sessions/:id" element={<SessionDetailPage />} />
+      <Route path="/library" element={<LibraryPage />} />
+      <Route path="/library/:id" element={<BookDetailPage />} />
+      <Route path="/tests" element={<TestsPage />} />
+      <Route path="/tests/:id" element={<TestDetailPage />} />
+      <Route path="/members" element={<MembersPage />} />
+      <Route path="/profile/:id" element={<ProfilePage />} />
+      <Route path="/admin" element={<AdminPage />} />
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 
-function App() {
+export default function App() {
+  useEffect(() => {
+    supabase.auth.getSession();
+
+    const { data: { subscription } } =
+      supabase.auth.onAuthStateChange((_event, session) => {
+        console.log("User:", session?.user?.email);
+      });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <I18nProvider>
         <AuthProvider>
           <TooltipProvider>
-            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
-              <Routes />
-            </WouterRouter>
-            <Toaster />
+            <BrowserRouter>
+              <AppRoutes />
+              <Toaster />
+            </BrowserRouter>
           </TooltipProvider>
         </AuthProvider>
       </I18nProvider>
     </QueryClientProvider>
   );
 }
-
-export default App;

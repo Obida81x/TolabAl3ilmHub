@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Link, useParams } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { ArrowLeft, ArrowRight, MapPin, Calendar, Pencil } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth, useRequireAuth } from "@/lib/auth";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatDateTime } from "@/lib/utils";
 import { useTranslation } from "@/lib/i18n";
+import { useParams } from "react-router-dom";
 
 interface ProfileForm {
   displayName: string;
@@ -31,6 +32,7 @@ interface ProfileForm {
 
 export default function ProfilePage() {
   useRequireAuth();
+  const navigate = useNavigate();
   const { user: me } = useAuth();
   const { t, lang } = useTranslation();
   
@@ -65,12 +67,12 @@ export default function ProfilePage() {
   return (
     <AppLayout>
       <div className="px-6 lg:px-10 py-8 max-w-3xl mx-auto">
-        <Link href="/members">
+        <button onClick={() => navigate("/members")} className="gap-1 mb-6">
           <Button variant="ghost" size="sm" className="gap-1 mb-6">
             <BackIcon className="h-4 w-4" />
             {t("members.allMembers")}
           </Button>
-        </Link>
+        </button>
 
         {isLoading ? (
           <Skeleton className="h-64 w-full" />

@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { Link } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { Users, Newspaper, BookOpen, Video, ArrowRight } from "lucide-react";
 import { useAuth, useRequireAuth } from "@/lib/auth";
 import { AppLayout } from "@/components/AppLayout";
@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 
 export default function HomePage() {
   useRequireAuth();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { t, lang } = useTranslation();
 
@@ -77,10 +78,10 @@ export default function HomePage() {
             <div className="flex items-center justify-between">
               <h3 className="text-xl font-semibold">{t("home.recentPosts")}</h3>
               <Button asChild variant="ghost" size="sm" className="gap-1">
-                <Link href="/feed">
+                <button onClick={() => navigate("/feed")}>
                   {t("home.viewFeed")}
                   <ArrowRight className={`h-4 w-4 ${lang === "ar" ? "rotate-180" : ""}`} />
-                </Link>
+                </button>
               </Button>
             </div>
 

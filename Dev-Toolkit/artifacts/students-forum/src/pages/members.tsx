@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "wouter";
+import { useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
 import { useRequireAuth } from "@/lib/auth";
 import { AppLayout } from "@/components/AppLayout";
@@ -13,6 +13,7 @@ import { useQuery } from "@tanstack/react-query"; // تأكد من إضافة ه
 
 export default function MembersPage() {
   useRequireAuth();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [filter, setFilter] = useState<"all" | "male" | "female">("all");
 
@@ -66,7 +67,12 @@ export default function MembersPage() {
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {(users as any[])?.map((u: any) => (
-            <Link key={u.id} href={`/profile/${u.id}`} data-testid={`link-member-${u.id}`} className="block group">
+            <button
+              key={u.id}
+              onClick={() => navigate(`/profile/${u.id}`)}
+              data-testid={`link-member-${u.id}`}
+              className="block group"
+            >
                 <Card className="border-card-border hover:border-primary transition-colors h-full">
                   <CardContent className="p-5">
                     <div className="flex items-center gap-3 mb-3">
@@ -95,7 +101,7 @@ export default function MembersPage() {
                     )}
                   </CardContent>
                 </Card>
-              </Link>
+              </button>
             ))}
           </div>
         )}

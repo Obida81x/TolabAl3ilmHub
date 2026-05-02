@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "./supabase";
 // تأكد أن الكود داخل auth.ts يشبه هذا:
 export const useForgotPassword = () => { };
@@ -96,9 +97,9 @@ export function useAuth(): AuthContextValue {
 
 export function useRequireAuth(): CurrentUser {
   const { user, isLoading } = useAuth();
-  const [, setLocation] = useLocation();
+  const navigate = useNavigate();
   if (!isLoading && !user) {
-    setLocation("/login");
+    navigate("/login");
   }
   return user;
 }

@@ -1,5 +1,6 @@
 import React from "react";
-import { Link } from "wouter";import { useRequireAuth } from "@/lib/auth";
+import { useNavigate } from "react-router-dom";
+import { useRequireAuth } from "@/lib/auth";
 import { useTranslation } from "@/lib/i18n";
 import { AppLayout } from "@/components/AppLayout";
 import { PageHeader } from "@/components/PageHeader";
@@ -8,10 +9,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { InitialsAvatar } from "@/components/InitialsAvatar";
 import { GraduationCap, ChevronRight, Trophy } from "lucide-react"; // مكتبة الأيقونات
-
+import { Button } from "@/components/ui/button";
 export default function TextsPage() {
   useRequireAuth();
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   // بيانات تجريبية لضمان عمل الصفحة حتى تربطها بقاعدة البيانات
   const texts: any[] = []; 
@@ -31,7 +33,7 @@ export default function TextsPage() {
           {isLoading && <Skeleton className="h-32 w-full" />}
           
           {texts?.map((txt: any) => (
-            <Link key={txt.id} href={`/texts/${txt.id}`} className="block group">
+            <Button key={txt.id} onClick={() => navigate(`/texts/${txt.id}`)} className="block group text-left">
               <Card className="border-card-border hover:border-primary transition-colors">
                 <CardContent className="p-5 flex items-center gap-4">
                   <div className="h-12 w-12 rounded-md bg-primary/10 flex items-center justify-center">
@@ -53,7 +55,7 @@ export default function TextsPage() {
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </CardContent>
               </Card>
-            </Link>
+            </Button>
           ))}
         </div>
 
